@@ -2,6 +2,7 @@ import React, {Component, PropTypes} from 'react';
 import {Dialog, RaisedButton, AutoComplete} from 'material-ui';
 import {connect} from 'react-redux';
 import {List} from 'immutable';
+import {parseURL} from '../helpers/util.js';
 
 import * as actions from '../actions';
 
@@ -37,14 +38,15 @@ class Connector extends Component {
                         fullWidth={true}
                         dataSource={history.toJS()}
                         searchText={lastValue}
-                        filter={AutoComplete.noFilter}
                         triggerUpdateOnFocus={true}
+                        autoComplete="off"
                         />
                 </Dialog>
             </div>
         );
     }
     onURL(url) {
+        url = parseURL(url).href;
         if(!url) {
             return;
         }

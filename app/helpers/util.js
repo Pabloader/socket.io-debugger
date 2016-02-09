@@ -17,3 +17,9 @@ export function simpleAction(type, ...argNames) {
         return action;
     }
 }
+
+export function parseURL(url) {
+    let a = document.createElement('a');
+    a.href = url;
+    return a;
+}
