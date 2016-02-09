@@ -8,7 +8,7 @@ import Immutable from 'immutable';
 import Root from './containers/Root';
 import configureStore from './store/configureStore';
 
-import storage from './libs/storage';
+import storage from 'store';
 import * as actions from './actions';
 
 const store = configureStore();
