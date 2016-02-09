@@ -45,7 +45,7 @@ var common = {
     plugins: [
         new HtmlWebPackPlugin(
             {
-                title: 'Cats finder app',
+                title: 'Socket.io debugger',
                 template: 'index-template.html',
                 inject: 'body'
             }
