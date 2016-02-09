@@ -29,3 +29,8 @@ store.subscribe(
         }
     }
 );
+
+let injectTapEventPlugin = require('react-tap-event-plugin');
+
+// inject tap for material-ui
+injectTapEventPlugin();

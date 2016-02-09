@@ -14,11 +14,7 @@ class Connector extends Component {
 
     render() {
         let {open} = this.state;
-        let {history} = this.props;
-        let lastValue = '';
-        if(history.count() > 0) {
-            lastValue = history.last();
-        }
+        let {history, lastValue} = this.props;
         let actions = [
             <RaisedButton
                 label="connect"
@@ -58,14 +54,16 @@ class Connector extends Component {
 
 Connector.propTypes = {
     dispatch: PropTypes.func.isRequired,
-    history: PropTypes.instanceOf(Set)
+    history: PropTypes.instanceOf(Set),
+    lastValue: PropTypes.string
 };
 
 function mapStateToProps(state) {
     const connector = state.connector;
     let history = connector.get('history');
+    let lastValue = connector.get('lastValue');
     if(!history) history = Set.of();
-    return {history};
+    return {history, lastValue};
 }
 
 export default connect(mapStateToProps)(Connector);

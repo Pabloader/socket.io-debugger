@@ -16,9 +16,7 @@ const events = [
     "reconnect_attempt",
     "reconnect_failed",
     "reconnect_error",
-    "reconnecting",
-    "ping",
-    "pong"
+    "reconnecting"
 ];
 
 const apiHandlers = {

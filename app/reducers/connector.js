@@ -12,7 +12,7 @@ export default createReducer({
         }
         return state.merge({
             history
-        });
+        }).set('lastValue', connector.lastValue);
     },
     [actions.CONNECT](state, {url}) {
         let history = state.get('history');
@@ -22,6 +22,6 @@ export default createReducer({
         history = history.add(url);
         return state.merge({
             history
-        });
+        }).set('lastValue', url);
     },
 }, Map());
