@@ -1,4 +1,4 @@
-import {fromJS, List, Map} from 'immutable';
+import {Set, Map} from 'immutable';
 import {createReducer} from '../helpers/util';
 import * as actions from '../actions';
 
@@ -6,9 +6,9 @@ export default createReducer({
     [actions.LOAD_STATE](state, {state: {connector}}) {
         let history;
         if (connector.history) {
-            history = List.of(...connector.history);
+            history = Set.of(...connector.history);
         } else {
-            history = List.of();
+            history = Set.of();
         }
         return state.merge({
             history
@@ -17,9 +17,9 @@ export default createReducer({
     [actions.CONNECT](state, {url}) {
         let history = state.get('history');
         if (!history) {
-            history = List.of();
+            history = Set.of();
         }
-        history = history.push(url);
+        history = history.add(url);
         return state.merge({
             history
         });

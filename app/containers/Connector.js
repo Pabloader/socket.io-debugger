@@ -1,7 +1,7 @@
 import React, {Component, PropTypes} from 'react';
 import {Dialog, RaisedButton, AutoComplete} from 'material-ui';
 import {connect} from 'react-redux';
-import {List} from 'immutable';
+import {Set} from 'immutable';
 import {parseURL} from '../helpers/util.js';
 
 import * as actions from '../actions';
@@ -58,13 +58,13 @@ class Connector extends Component {
 
 Connector.propTypes = {
     dispatch: PropTypes.func.isRequired,
-    history: PropTypes.instanceOf(List)
+    history: PropTypes.instanceOf(Set)
 };
 
 function mapStateToProps(state) {
     const connector = state.connector;
     let history = connector.get('history');
-    if(!history) history = List.of();
+    if(!history) history = Set.of();
     return {history};
 }
 

@@ -1,5 +1,6 @@
 import React, {Component, PropTypes} from 'react';
 import Connector from './Connector.js';
+import TimeLine from './TimeLine.js';
 import {connect} from 'react-redux';
 
 class App extends Component {
@@ -7,6 +8,7 @@ class App extends Component {
         return (
             <div>
                 <Connector />
+                <TimeLine />
             </div>
         );
     }
