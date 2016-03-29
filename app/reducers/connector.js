@@ -24,4 +24,7 @@ export default createReducer({
             history
         }).set('lastValue', url);
     },
+    [actions.SET_CLIENT](state, {client}) {
+        return state.set('client', client);
+    },
 }, Map());

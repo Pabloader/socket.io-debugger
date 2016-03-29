@@ -4,6 +4,7 @@ import {getScript} from 'jquery';
 import {parseURL} from '../helpers/util.js';
 
 export const CONNECT = Symbol('Connect');
+export const EMIT = Symbol('Emit');
 
 const events = [
     "connect",
@@ -30,6 +31,14 @@ const apiHandlers = {
             initClient(defaultClient, url, store.dispatch);
             store.dispatch(actions.addEvent('download_error', {url, error}, true));
         })
+    },
+    [EMIT]({type, args}, store){
+        store.dispatch(actions.addEvent(type, args, false));
+        let {connector} = store.getState();
+        let client = connector.get('client');
+        if (client) {
+            client.emit(type, ...args);
+        }
     }
 };
 
@@ -50,11 +59,12 @@ function initClient(io, url, dispatch) {
             oldEmit.call(socket, type, ...args);
         };
     }
-    for(let type of events) {
+    for (let type of events) {
         socket.on(type, (...args) => {
             dispatch(actions.addEvent(type, args, true));
         })
     }
+    dispatch(actions.setClient(socket));
 }
 
 export default store => next => action => {

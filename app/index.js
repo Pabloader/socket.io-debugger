@@ -23,7 +23,8 @@ if (state) {
 }
 store.subscribe(
     () => {
-        const immutableState = Immutable.fromJS(store.getState());
+        let immutableState = Immutable.fromJS(store.getState());
+        immutableState = immutableState.deleteIn(['connector', 'client']);
         if (immutableState) {
             storage.set('state', immutableState.toJS());
         }

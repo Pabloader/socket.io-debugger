@@ -9,4 +9,22 @@ export default createReducer({
             history
         });
     },
-}, Map());
+    [actions.EMIT](state, data) {
+        let history = state.get('history');
+        if (!history) {
+            history = List.of();
+        }
+        history = history.push(data);
+        return state.merge({
+            history
+        }).set('lastValue', data);
+    },
+    [actions.OPEN_EMITTER](state) {
+        return state.set('open', true);
+    },
+    [actions.CLOSE_EMITTER](state) {
+        return state.set('open', false);
+    }
+}, Map({
+    open: false
+}));
