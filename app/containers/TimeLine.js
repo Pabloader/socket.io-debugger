@@ -1,25 +1,37 @@
-import React, {Component, PropTypes} from 'react';
-import {Dialog, RaisedButton, AutoComplete} from 'material-ui';
-import {connect} from 'react-redux';
-import {List} from 'immutable';
-import {parseURL} from '../helpers/util.js';
-import TimeLineItem from '../components/TimeLineItem.js';
-
-import * as actions from '../actions';
+import React, {Component, PropTypes} from "react"
+import ReactDOM from 'react-dom'
+import {connect} from "react-redux"
+import {List} from "immutable"
+import TimeLineItem from "../components/TimeLineItem.js"
+import {Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableFooter} from "material-ui"
+import Emitter from './Emitter.js'
 
 class TimeLine extends Component {
     render() {
         let {events} = this.props;
         return (
-            <div className="timeline" ref="timeline">
-                {events.map(event => <TimeLineItem key={event.id} event = {event}/>)}
-            </div>
+            <Table className="timeline" ref="timeline" selectable={false}>
+                <TableHeader displaySelectAll={false}>
+                    <TableRow>
+                        <TableHeaderColumn colSpan={2}>Type</TableHeaderColumn>
+                        <TableHeaderColumn>Data</TableHeaderColumn>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {events.map(event => <TimeLineItem key={event.id} event={event}/>)}
+                </TableBody>
+                <TableFooter>
+                    <Emitter />
+                </TableFooter>
+            </Table>
         );
     }
+
     componentDidUpdate() {
         let {timeline} = this.refs;
-        if(timeline){
-           timeline.scrollTop = timeline.scrollHeight;
+        if (timeline) {
+            let bodyDiv = ReactDOM.findDOMNode(timeline.refs.tableDiv);
+            bodyDiv.scrollTop = bodyDiv.scrollHeight;
         }
     }
 }

@@ -18,13 +18,5 @@ export default createReducer({
         return state.merge({
             history
         }).set('lastValue', data);
-    },
-    [actions.OPEN_EMITTER](state) {
-        return state.set('open', true);
-    },
-    [actions.CLOSE_EMITTER](state) {
-        return state.set('open', false);
     }
-}, Map({
-    open: false
-}));
+}, Map());

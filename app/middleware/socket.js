@@ -26,10 +26,8 @@ const apiHandlers = {
         store.dispatch(actions.addEvent('connection_request', {url}, true));
         getScript(`${origin}/socket.io/socket.io.js`).then(() => {
             initClient(window.io || defaultClient, url, store.dispatch);
-            store.dispatch(actions.addEvent('download_success', {url}, true));
         }, error => {
             initClient(defaultClient, url, store.dispatch);
-            store.dispatch(actions.addEvent('download_error', {url, error}, true));
         })
     },
     [EMIT]({type, args}, store){

@@ -1,9 +1,9 @@
-import React, {Component, PropTypes} from 'react';
-import {Dialog, RaisedButton, AutoComplete} from 'material-ui';
-import {connect} from 'react-redux';
-import {List} from 'immutable';
-
-import * as actions from '../actions';
+import React, {Component, PropTypes} from "react";
+import {AutoComplete, TableRow, TableRowColumn, IconButton} from "material-ui";
+import ArrowUpward from "material-ui/lib/svg-icons/navigation/arrow-upward";
+import {connect} from "react-redux";
+import {List} from "immutable";
+import * as actions from "../actions";
 
 class Emitter extends Component {
     constructor() {
@@ -11,36 +11,41 @@ class Emitter extends Component {
     }
 
     render() {
-        let {history, lastValue, open} = this.props;
-        let actions = [
-            <RaisedButton
-                label="emit"
-                primary={true}
-                onClick={e => this.onEmit(this.refs.type.getValue())}
-                />
-        ];
+        let {lastValue} = this.props;
         return (
-            <div>
-                <Dialog
-                    title="Emit event"
-                    actions={actions}
-                    open={open}>
+            <TableRow selectable={false}>
+                <TableRowColumn title="Send" width="5%">
+                    <IconButton onClick={e => this.onEmit(this.refs.type.getValue())}>
+                        <ArrowUpward/>
+                    </IconButton>
+                </TableRowColumn>
+                <TableRowColumn>
                     <AutoComplete
                         ref="type"
                         hintText="ping"
-                        dataSource={history.toJS().filter(h=>h).map(({eventType}) => eventType)}
+                        dataSource={this._prepareDataSource()}
                         searchText={lastValue && lastValue.eventType}
                         triggerUpdateOnFocus={true}
                         autoComplete="off"
-                        />
-                </Dialog>
-            </div>
+                        fullWidth={true}
+                    />
+                </TableRowColumn>
+                <TableRowColumn>
+
+                </TableRowColumn>
+            </TableRow>
         );
+    }
+
+    _prepareDataSource() {
+        let {history} = this.props;
+        return [...new Set(history.toJS()
+            .filter(h=>h)
+            .map(({eventType}) => eventType))];
     }
 
     onEmit(type) {
         let {dispatch} = this.props;
-        dispatch(actions.closeEmitter());
         dispatch(actions.emit(type));
     }
 }
@@ -48,15 +53,13 @@ class Emitter extends Component {
 Emitter.propTypes = {
     dispatch: PropTypes.func.isRequired,
     history: PropTypes.instanceOf(List),
-    lastValue: PropTypes.object,
-    open: PropTypes.bool.isRequired
+    lastValue: PropTypes.object
 };
 
 function mapStateToProps(state) {
     const emitter = state.emitter;
     let history = emitter.get('history');
     let lastValue = emitter.get('lastValue');
-    let open = emitter.get('open');
     if (!history) history = List.of();
     return {history, lastValue, open};
 }
