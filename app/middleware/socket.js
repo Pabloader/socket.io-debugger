@@ -4,6 +4,7 @@ import {getScript} from "jquery";
 import {parseURL} from "../helpers/util.js";
 
 export const CONNECT = Symbol('Connect');
+export const DISCONNECT = Symbol('Disconnect');
 export const EMIT = Symbol('Emit');
 
 const events = [
@@ -34,6 +35,13 @@ const apiHandlers = {
         }, error => {
             initClient(defaultClient, url, store.dispatch);
         })
+    },
+    [DISCONNECT](disconnect, store) {
+        let {connector} = store.getState();
+        let client = connector.get('client');
+        if (client && disconnect) {
+            client.disconnect();
+        }
     },
     [EMIT]({type, args}, store){
         let {connector} = store.getState();

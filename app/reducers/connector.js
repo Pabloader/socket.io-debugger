@@ -22,9 +22,12 @@ export default createReducer({
         history = history.add(url);
         return state.merge({
             history
-        }).set('lastValue', url);
+        }).set('lastValue', url).set('open', false);
     },
     [actions.SET_CLIENT](state, {client}) {
         return state.set('client', client);
     },
-}, Map());
+    [actions.NEW_CONNECTION](state) {
+        return state.set('open', true);
+    }
+}, Map({open: true}));

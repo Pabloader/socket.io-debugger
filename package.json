@@ -1,6 +1,6 @@
 {
   "name": "socket.io-debugger",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Socket.io debug tool",
   "main": "index.js",
   "scripts": {

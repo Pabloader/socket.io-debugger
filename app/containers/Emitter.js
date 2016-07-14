@@ -73,7 +73,7 @@ class Emitter extends Component {
     _prepareDataSource() {
         let {history} = this.props;
         return [...new Set(history.toJS()
-            .filter(h=>h)
+            .filter(Boolean)
             .map(({eventType}) => eventType))];
     }
 
