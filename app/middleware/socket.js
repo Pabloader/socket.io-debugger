@@ -65,7 +65,7 @@ function initClient(io, url, dispatch) {
     /* Setup outgoing events logging */
     let oldEmit = socket.emit;
     socket.emit = (type, ...args) => {
-        if (!excludedEvents.includes(type)) {
+        if (!excludedEvents.includes(type) && !events.includes(type)) {
             dispatch(actions.addEvent(type, args, false));
         }
         oldEmit.call(socket, type, ...args);
