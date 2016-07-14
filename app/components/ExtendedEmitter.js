@@ -93,8 +93,8 @@ export default class ExtendedEmitter extends Component {
 
     _checkJSONandUpdate(jsonText) {
         try {
-            JSON.parse(jsonText);
-            this.setState({jsonText, jsonError: null});
+            let object = JSON.parse(jsonText);
+            this.setState({jsonText, jsonError: null, yamlText: YAML.dump(object), yamlError: null});
         } catch (e) {
             this.setState({jsonText, jsonError: e.message});
         }
@@ -102,8 +102,8 @@ export default class ExtendedEmitter extends Component {
 
     _checkYAMLandUpdate(yamlText) {
         try {
-            YAML.safeLoad(yamlText);
-            this.setState({yamlText, yamlError: null});
+            let object = YAML.safeLoad(yamlText);
+            this.setState({yamlText, yamlError: null, jsonText: JSON.stringify(object, null, 4), jsonError: null});
         } catch (e) {
             this.setState({yamlText, yamlError: e.message});
         }

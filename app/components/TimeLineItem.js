@@ -1,5 +1,5 @@
 import React, {Component, PropTypes} from "react";
-import {TableRow, TableRowColumn, IconButton, RaisedButton, Dialog} from "material-ui";
+import {TableRow, TableRowColumn, IconButton, FlatButton, Dialog} from "material-ui";
 import ArrowUpward from "material-ui/lib/svg-icons/navigation/arrow-upward";
 import ArrowDownward from "material-ui/lib/svg-icons/navigation/arrow-downward";
 import Description from "material-ui/lib/svg-icons/action/description";
@@ -35,7 +35,7 @@ export default class TimeLineItem extends Component {
             background: color
         };
         const buttons = [
-            <RaisedButton
+            <FlatButton
                 label="OK"
                 onTouchTap={() => this.handleClose()}
             />
