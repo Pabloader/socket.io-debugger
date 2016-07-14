@@ -19,6 +19,9 @@ export function simpleAction(type, ...argNames) {
 }
 
 export function parseURL(url) {
+    if(url.slice(0, 4) !== 'http') {
+        url = 'http://' + url;
+    }
     let a = document.createElement('a');
     a.href = url;
     return a;

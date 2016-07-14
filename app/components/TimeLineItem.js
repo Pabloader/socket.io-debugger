@@ -45,10 +45,10 @@ export default class TimeLineItem extends Component {
                 <TableRowColumn title={direction} width="5%">{arrow}</TableRowColumn>
                 <TableRowColumn>{event.type}</TableRowColumn>
                 <TableRowColumn>
-                    <pre>{this._renderYAML()}</pre>
+                    <pre>{this._renderShort()}</pre>
                 </TableRowColumn>
                 <TableRowColumn width="5%">
-                    <IconButton onClick={() => this.handleOpen()} title="JSON">
+                    <IconButton onClick={() => this.handleOpen()} title="Details">
                         <Description/>
                     </IconButton>
                     <Dialog
@@ -57,7 +57,7 @@ export default class TimeLineItem extends Component {
                         open={this.state.open}
                         onRequestClose={() => this.handleClose()}
                     >
-                        <pre>{this._renderJSON()}</pre>
+                        <pre style={{overflow: 'auto'}}>{this._renderDetails()}</pre>
                     </Dialog>
                 </TableRowColumn>
             </TableRow>
@@ -74,14 +74,14 @@ export default class TimeLineItem extends Component {
         return content;
     }
 
-    _renderJSON() {
+    _renderDetails() {
         let {content} = this.props.event;
         if (!content) {
             return '';
         }
         let replacer = (key, value) => {
             if (typeof value === 'function') {
-                return `function: ${value.toString()}`;
+                return value.toString();
             }
             return value;
         };
@@ -91,7 +91,11 @@ export default class TimeLineItem extends Component {
             let i = 0;
             for (let arg of content) {
                 lines.push(`Argument # ${i++}: `);
-                lines.push(JSON.stringify(arg, replacer, 4));
+                if (typeof arg === 'object') {
+                    lines.push(JSON.stringify(arg, replacer, 4));
+                } else {
+                    lines.push(String(arg));
+                }
             }
         } else {
             lines.push(JSON.stringify(content, replacer, 4));
@@ -99,11 +103,15 @@ export default class TimeLineItem extends Component {
         return lines.join('\n');
     }
 
-    _renderYAML() {
+    _renderShort() {
         if (!this.content) {
             return '';
         }
-        return yaml.dump(this.content);
+        try {
+            return yaml.dump(this.content);
+        } catch (e) {
+            return this.content.toString();
+        }
     }
 }
 

@@ -1,13 +1,28 @@
 import React, {Component, PropTypes} from "react";
-import {FlatButton, Dialog, Tabs, Tab, Checkbox, TextField} from "material-ui";
+import {FlatButton, Dialog, Tabs, Tab, Checkbox, TextField, AutoComplete} from "material-ui";
 import YAML from "js-yaml";
 
-class ExtendedEmitter extends Component {
-    state = {
-        value: 'yaml',
-        jsonError: null,
-        yamlError: null
+export default class ExtendedEmitter extends Component {
+    static propTypes = {
+        open: PropTypes.bool.isRequired,
+        handleClose: PropTypes.func.isRequired,
+        onEmit: PropTypes.func.isRequired,
+        dataSource: PropTypes.array.isRequired,
+        searchText: PropTypes.string,
     };
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            argumentsType: 'yaml',
+            jsonError: null,
+            yamlError: null,
+            jsonText: '{}',
+            yamlText: '',
+            callback: false,
+            type: props.searchText
+        }
+    }
 
     render() {
         const buttons = [
@@ -18,7 +33,7 @@ class ExtendedEmitter extends Component {
             <FlatButton
                 label="Emit"
                 primary={true}
-                onTouchTap={() => this.props.onEmit(this.type, this.arguments, this.callback)}
+                onTouchTap={() => this.props.onEmit(this.state.type, this.arguments, this.state.callback)}
                 disabled={this.disabled}
             />
         ];
@@ -32,12 +47,19 @@ class ExtendedEmitter extends Component {
                 open={this.props.open}
                 onRequestClose={this.props.handleClose}
             >
-                <TextField
-                    hintText="Event name"
-                    fullWidth={true}
+                <AutoComplete
                     ref="type"
+                    hintText="Event name"
+                    dataSource={this.props.dataSource}
+                    searchText={this.state.type}
+                    triggerUpdateOnFocus={true}
+                    autoComplete="off"
+                    fullWidth={true}
+                    onUpdateInput={type => this.setState({type})}
+                    onNewRequest={type => this.setState({type})}
                 />
-                <Tabs value={this.state.value} onChange={value => typeof(value) === 'string' && this.setState({value})}
+                <Tabs value={this.state.argumentsType}
+                      onChange={argumentsType => typeof(argumentsType) === 'string' && this.setState({argumentsType})}
                       ref="argumentsType">
                     <Tab label="YAML" value="yaml">
                         <TextField
@@ -45,9 +67,9 @@ class ExtendedEmitter extends Component {
                             multiLine={true}
                             rows={4}
                             fullWidth={true}
-                            ref="yaml"
                             errorText={this.state.yamlError}
-                            onChange={() => this._checkYAML()}
+                            onChange={e => this._checkYAMLandUpdate(e.target.value)}
+                            value={this.state.yamlText}
                         />
                     </Tab>
                     <Tab label="JSON" value="json">
@@ -56,68 +78,57 @@ class ExtendedEmitter extends Component {
                             multiLine={true}
                             rows={4}
                             fullWidth={true}
-                            ref="json"
                             errorText={this.state.jsonError}
-                            onChange={() => this._checkJSON()}
-                            defaultValue="{}"
+                            onChange={e => this._checkJSONandUpdate(e.target.value)}
+                            value={this.state.jsonText}
                         />
                     </Tab>
-                    <Tab label="Object" value="object">
-                    </Tab>
                 </Tabs>
-                <Checkbox label="Use callback" style={checkboxStyle} ref="callback"/>
+                <Checkbox label="Use callback" style={checkboxStyle}
+                          checked={this.state.callback}
+                          onCheck={e => this.setState({callback: e.target.checked})}/>
             </Dialog>
         );
     }
 
-    _checkJSON() {
-        let json = this.refs.json.getValue();
+    _checkJSONandUpdate(jsonText) {
         try {
-            JSON.parse(json);
-            this.setState({jsonError: null});
+            JSON.parse(jsonText);
+            this.setState({jsonText, jsonError: null});
         } catch (e) {
-            this.setState({jsonError: e.message});
+            this.setState({jsonText, jsonError: e.message});
         }
     }
 
-    _checkYAML() {
-        let yaml = this.refs.yaml.getValue();
+    _checkYAMLandUpdate(yamlText) {
         try {
-            YAML.safeLoad(yaml);
-            this.setState({yamlError: null});
+            YAML.safeLoad(yamlText);
+            this.setState({yamlText, yamlError: null});
         } catch (e) {
-            this.setState({yamlError: e.message});
+            this.setState({yamlText, yamlError: e.message});
         }
     }
 
     get arguments() {
         if (!this.disabled) {
-            switch (this.state.value) {
+            switch (this.state.argumentsType) {
                 case 'json':
                     if (this.state.jsonError) {
                         return [];
                     }
-                    return [JSON.parse(this.refs.json.getValue())];
+                    return [JSON.parse(this.state.jsonText)];
                 case 'yaml':
                     if (this.state.yamlError) {
                         return [];
                     }
-                    return [YAML.safeLoad(this.refs.yaml.getValue())];
+                    return [YAML.safeLoad(this.state.yamlText)];
             }
         }
         return [];
     }
 
-    get callback() {
-        return this.refs.callback && this.refs.callback.isChecked();
-    }
-
-    get type() {
-        return this.refs.type && this.refs.type.getValue();
-    }
-
     get disabled() {
-        switch (this.state.value) {
+        switch (this.state.argumentsType) {
             case 'json':
                 return !!this.state.jsonError;
             case 'yaml':
@@ -126,11 +137,4 @@ class ExtendedEmitter extends Component {
         return false;
     }
 }
-
-ExtendedEmitter.propTypes = {
-    open: PropTypes.bool.isRequired,
-    handleClose: PropTypes.func.isRequired,
-    onEmit: PropTypes.func.isRequired
-};
-export default ExtendedEmitter;
 

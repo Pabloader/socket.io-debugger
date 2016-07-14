@@ -1,6 +1,6 @@
-import {Set, Map} from 'immutable';
-import {createReducer} from '../helpers/util';
-import * as actions from '../actions';
+import {Set, Map} from "immutable";
+import {createReducer} from "../helpers/util";
+import * as actions from "../actions";
 
 export default createReducer({
     [actions.LOAD_STATE](state, {state: {connector}}) {

@@ -1,7 +1,7 @@
 import React, {Component, PropTypes} from "react";
 import {AutoComplete, TableRow, TableRowColumn, IconButton, TextField} from "material-ui";
 import ArrowUpward from "material-ui/lib/svg-icons/navigation/arrow-upward";
-import Settings from "material-ui/lib/svg-icons/action/settings";
+import Code from "material-ui/lib/svg-icons/action/code";
 import {connect} from "react-redux";
 import {List} from "immutable";
 import ExtendedEmitter from "../components/ExtendedEmitter";
@@ -22,6 +22,7 @@ class Emitter extends Component {
 
     render() {
         let {lastValue} = this.props;
+        var dataSource = this._prepareDataSource();
         return (
             <TableRow selectable={false}>
                 <TableRowColumn title="Send" width="5%">
@@ -33,7 +34,7 @@ class Emitter extends Component {
                     <AutoComplete
                         ref="type"
                         hintText="Event name"
-                        dataSource={this._prepareDataSource()}
+                        dataSource={dataSource}
                         searchText={lastValue && lastValue.eventType}
                         triggerUpdateOnFocus={true}
                         autoComplete="off"
@@ -51,19 +52,21 @@ class Emitter extends Component {
                 </TableRowColumn>
                 <TableRowColumn width="5%">
                     <IconButton title="Extended" onClick={() => this.openExtendedEmitter()}>
-                        <Settings/>
+                        <Code/>
                     </IconButton>
                     <ExtendedEmitter
                         handleClose={() => this.closeExtendedEmitter()}
                         open={this.state.open}
                         onEmit={this.onExtendedEmit.bind(this)}
+                        dataSource={dataSource}
+                        searchText={lastValue && lastValue.eventType}
                     />
                 </TableRowColumn>
             </TableRow>
         );
     }
 
-    doEmit(){
+    doEmit() {
         this.onEmit(this.refs.type.getValue(), this.refs.text.getValue());
     }
 
@@ -83,9 +86,11 @@ class Emitter extends Component {
         let {dispatch} = this.props;
         this.closeExtendedEmitter();
         if (cb) {
-            args.push(function (...callbackArgs) {
-                dispatch(actions.addEvent('callback: ' + type, ...callbackArgs, true));
-            });
+            var callback = function (...callbackArgs) {
+                dispatch(actions.addEvent('callback:' + type, callbackArgs, true));
+            };
+            callback.toString = () => 'function() { /* code hidden */ }';
+            args.push(callback);
         }
         dispatch(actions.emit(type, ...args));
     }

@@ -20,6 +20,11 @@ const events = [
     "reconnecting"
 ];
 
+const excludedEvents = [
+    'ping',
+    'pong'
+];
+
 const apiHandlers = {
     [CONNECT](url, store) {
         let {origin} = parseURL(url);
@@ -60,7 +65,9 @@ function initClient(io, url, dispatch) {
     /* Setup outgoing events logging */
     let oldEmit = socket.emit;
     socket.emit = (type, ...args) => {
-        dispatch(actions.addEvent(type, args, false));
+        if (!excludedEvents.includes(type)) {
+            dispatch(actions.addEvent(type, args, false));
+        }
         oldEmit.call(socket, type, ...args);
     };
     for (let type of events) {
