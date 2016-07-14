@@ -1,12 +1,11 @@
 {
   "name": "socket.io-debugger",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Socket.io debug tool",
   "main": "index.js",
   "scripts": {
     "start": "webpack-dev-server --port 8076",
-    "build": "webpack",
-    "test:watch": "npm run test -- --watch"
+    "build": "webpack"
   },
   "repository": {
     "type": "git",
