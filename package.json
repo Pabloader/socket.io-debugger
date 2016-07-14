@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "webpack-dev-server --port 8076",
-    "build": "webpack"
+    "build": "webpack",
+    "web": "npm run build && cd build && python -m SimpleHTTPServer $PORT"
   },
   "repository": {
     "type": "git",
