@@ -1,7 +1,7 @@
-import * as actions from '../actions';
-import defaultClient from 'socket.io-client';
-import {getScript} from 'jquery';
-import {parseURL} from '../helpers/util.js';
+import * as actions from "../actions";
+import defaultClient from "socket.io-client";
+import {getScript} from "jquery";
+import {parseURL} from "../helpers/util.js";
 
 export const CONNECT = Symbol('Connect');
 export const EMIT = Symbol('Emit');
@@ -31,7 +31,6 @@ const apiHandlers = {
         })
     },
     [EMIT]({type, args}, store){
-        store.dispatch(actions.addEvent(type, args, false));
         let {connector} = store.getState();
         let client = connector.get('client');
         if (client) {
@@ -42,6 +41,7 @@ const apiHandlers = {
 
 function initClient(io, url, dispatch) {
     let socket = io.connect(url);
+    /* Setup incoming events logging */
     if (socket.onevent) {
         let oldOnEvent = socket.onevent;
         socket.onevent = (packet, ...args) => {
@@ -51,22 +51,30 @@ function initClient(io, url, dispatch) {
             oldOnEvent.call(socket, packet, ...args);
         }
     } else if (socket.$emit) {
-        let oldEmit = socket.$emit;
+        let old$Emit = socket.$emit;
         socket.$emit = (type, ...args) => {
             dispatch(actions.addEvent(type, args, true));
-            oldEmit.call(socket, type, ...args);
+            old$Emit.call(socket, type, ...args);
         };
     }
+    /* Setup outgoing events logging */
+    let oldEmit = socket.emit;
+    socket.emit = (type, ...args) => {
+        dispatch(actions.addEvent(type, args, false));
+        oldEmit.call(socket, type, ...args);
+    };
     for (let type of events) {
         socket.on(type, (...args) => {
             dispatch(actions.addEvent(type, args, true));
         })
     }
     dispatch(actions.setClient(socket));
+    console.log('Your current connection is available through window.socket variable.');
+    console.log('You may use it as you wish');
+    window.socket = socket;
 }
 
 export default store => next => action => {
-    console.log(action);
     for (let symbol of Object.getOwnPropertySymbols(apiHandlers)) {
         let handler = apiHandlers[symbol];
         let actionData = action[symbol];

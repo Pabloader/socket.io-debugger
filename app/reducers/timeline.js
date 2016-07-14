@@ -3,7 +3,7 @@ import {createReducer} from '../helpers/util';
 import * as actions from '../actions';
 
 export default createReducer({
-    [actions.ADD_EVENT](state, {eventType, content}) {
+    [actions.ADD_EVENT](state, {eventType, content, incoming}) {
         let events = state.get('events');
         if (!events) {
             events = List.of();
@@ -11,7 +11,7 @@ export default createReducer({
         let event = {
             type: eventType,
             id: events.count(),
-            content
+            content, incoming
         };
         events = events.push(event);
         return state.merge({events});

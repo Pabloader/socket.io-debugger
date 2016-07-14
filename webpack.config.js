@@ -47,7 +47,8 @@ var common = {
             {
                 title: 'Socket.io debugger',
                 template: 'index-template.html',
-                inject: 'body'
+                inject: 'body',
+                favicon: 'favicon.png'
             }
         )
     ]

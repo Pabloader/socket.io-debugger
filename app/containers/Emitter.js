@@ -1,13 +1,23 @@
 import React, {Component, PropTypes} from "react";
-import {AutoComplete, TableRow, TableRowColumn, IconButton} from "material-ui";
+import {AutoComplete, TableRow, TableRowColumn, IconButton, TextField} from "material-ui";
 import ArrowUpward from "material-ui/lib/svg-icons/navigation/arrow-upward";
+import Settings from "material-ui/lib/svg-icons/action/settings";
 import {connect} from "react-redux";
 import {List} from "immutable";
+import ExtendedEmitter from "../components/ExtendedEmitter";
 import * as actions from "../actions";
 
 class Emitter extends Component {
-    constructor() {
-        super(...arguments);
+    state = {
+        open: false,
+    };
+
+    openExtendedEmitter() {
+        this.setState({open: true});
+    }
+
+    closeExtendedEmitter() {
+        this.setState({open: false});
     }
 
     render() {
@@ -15,26 +25,46 @@ class Emitter extends Component {
         return (
             <TableRow selectable={false}>
                 <TableRowColumn title="Send" width="5%">
-                    <IconButton onClick={e => this.onEmit(this.refs.type.getValue())}>
+                    <IconButton onClick={e => this.doEmit()}>
                         <ArrowUpward/>
                     </IconButton>
                 </TableRowColumn>
                 <TableRowColumn>
                     <AutoComplete
                         ref="type"
-                        hintText="ping"
+                        hintText="Event name"
                         dataSource={this._prepareDataSource()}
                         searchText={lastValue && lastValue.eventType}
                         triggerUpdateOnFocus={true}
                         autoComplete="off"
                         fullWidth={true}
+                        onKeyUp={e => e.keyCode === 13 && this.doEmit()}
                     />
                 </TableRowColumn>
                 <TableRowColumn>
-
+                    <TextField
+                        hintText="String will be used as first argument for event"
+                        fullWidth={true}
+                        ref="text"
+                        onKeyUp={e => e.keyCode === 13 && this.doEmit()}
+                    />
+                </TableRowColumn>
+                <TableRowColumn width="5%">
+                    <IconButton title="Extended" onClick={() => this.openExtendedEmitter()}>
+                        <Settings/>
+                    </IconButton>
+                    <ExtendedEmitter
+                        handleClose={() => this.closeExtendedEmitter()}
+                        open={this.state.open}
+                        onEmit={this.onExtendedEmit.bind(this)}
+                    />
                 </TableRowColumn>
             </TableRow>
         );
+    }
+
+    doEmit(){
+        this.onEmit(this.refs.type.getValue(), this.refs.text.getValue());
     }
 
     _prepareDataSource() {
@@ -44,9 +74,20 @@ class Emitter extends Component {
             .map(({eventType}) => eventType))];
     }
 
-    onEmit(type) {
+    onEmit(type, text) {
         let {dispatch} = this.props;
-        dispatch(actions.emit(type));
+        dispatch(actions.emit(type, text));
+    }
+
+    onExtendedEmit(type, args, cb) {
+        let {dispatch} = this.props;
+        this.closeExtendedEmitter();
+        if (cb) {
+            args.push(function (...callbackArgs) {
+                dispatch(actions.addEvent('callback: ' + type, ...callbackArgs, true));
+            });
+        }
+        dispatch(actions.emit(type, ...args));
     }
 }
 

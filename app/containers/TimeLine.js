@@ -10,11 +10,11 @@ class TimeLine extends Component {
     render() {
         let {events} = this.props;
         return (
-            <Table className="timeline" ref="timeline" selectable={false}>
+            <Table className="timeline" ref="timeline" selectable={false} height="calc(100vh - 172px)">
                 <TableHeader displaySelectAll={false}>
                     <TableRow>
                         <TableHeaderColumn colSpan={2}>Type</TableHeaderColumn>
-                        <TableHeaderColumn>Data</TableHeaderColumn>
+                        <TableHeaderColumn colSpan={2}>Data (First argument)</TableHeaderColumn>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
