@@ -85,8 +85,23 @@ function initClient(io, url, dispatch) {
     }
     dispatch(actions.setClient(socket));
     console.log('Your current connection is available through window.socket variable.');
-    console.log('You may use it as you wish');
-    window.socket = socket;
+    if (typeof window.Proxy === 'function') {
+        console.log('You can use socket.event(...args) as socket.emit("event", ...args)');
+        window.socket = new Proxy(socket, {
+            get(target, name) {
+                if (!(name in target)) {
+                    target[name] = function (...args) {
+                        socket.emit(name, ...args);
+                    };
+                }
+                return target[name];
+            }
+        });
+    }
+    else {
+        window.socket = socket;
+    }
+
 }
 
 export default store => next => action => {
