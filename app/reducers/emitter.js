@@ -1,27 +1,42 @@
-import {List, Map} from "immutable";
+import {List, Set, Map} from "immutable";
 import {createReducer} from "../helpers/util";
 import * as actions from "../actions";
 
 export default createReducer({
     [actions.LOAD_STATE](state, {state: {emitter}}) {
-        let history;
-        if (emitter.history) {
-            history = List.of(...emitter.history);
+        let history, templates;
+        if (emitter.history && typeof emitter.history[0] === 'string') {
+            history = Set.of(...emitter.history);
         } else {
-            history = List.of();
+            history = Set.of();
+        }
+        if (emitter.templates) {
+            templates = List.of(...emitter.templates);
+        } else {
+            templates = List.of();
         }
         return state.merge({
-            history
+            history, templates
         }).set('lastValue', emitter.lastValue);
     },
-    [actions.EMIT](state, data) {
+    [actions.EMIT](state, {eventType}) {
         let history = state.get('history');
         if (!history) {
-            history = List.of();
+            history = Set.of();
         }
-        history = history.push(data);
+        history = history.add(eventType);
         return state.merge({
             history
-        }).set('lastValue', data);
+        }).set('lastValue', eventType);
+    },
+    [actions.ADD_TEMPLATE](state, data) {
+        let templates = state.get('templates');
+        if (!templates) {
+            templates = List.of();
+        }
+        templates = templates.push(data);
+        return state.merge({
+            templates
+        });
     }
 }, Map());

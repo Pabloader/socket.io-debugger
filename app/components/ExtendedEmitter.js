@@ -1,14 +1,16 @@
 import React, {Component, PropTypes} from "react";
-import {FlatButton, Dialog, Tabs, Tab, Checkbox, TextField, AutoComplete} from "material-ui";
+import {FlatButton, Dialog, Tabs, Tab, Checkbox, TextField, AutoComplete, SelectField, MenuItem} from "material-ui";
 import YAML from "js-yaml";
 
 export default class ExtendedEmitter extends Component {
     static propTypes = {
         open: PropTypes.bool.isRequired,
         handleClose: PropTypes.func.isRequired,
+        onSave: PropTypes.func,
         onEmit: PropTypes.func.isRequired,
         dataSource: PropTypes.array.isRequired,
         searchText: PropTypes.string,
+        templates: PropTypes.array
     };
 
     constructor(props) {
@@ -37,6 +39,12 @@ export default class ExtendedEmitter extends Component {
                 disabled={this.disabled}
             />
         ];
+        if (typeof this.props.onSave === 'function') {
+            buttons.unshift(<FlatButton
+                label="Save as template"
+                onTouchTap={this.onSave.bind(this)}
+            />);
+        }
         const checkboxStyle = {
             marginTop: '15px'
         };
@@ -47,6 +55,13 @@ export default class ExtendedEmitter extends Component {
                 open={this.props.open}
                 onRequestClose={this.props.handleClose}
             >
+                <SelectField
+                    onChange={this.handleChange.bind(this)}
+                    fullWidth={true}
+                    hintText="Select template"
+                >
+                    {this._prepareMenuItems()}
+                </SelectField>
                 <AutoComplete
                     ref="type"
                     hintText="Event name"
@@ -63,7 +78,7 @@ export default class ExtendedEmitter extends Component {
                       ref="argumentsType">
                     <Tab label="YAML" value="yaml">
                         <TextField
-                            hintText="Generated object will be used as first argument for event"
+                            floatingLabelText="Generated object will be used as first argument for event"
                             multiLine={true}
                             rows={4}
                             fullWidth={true}
@@ -74,7 +89,7 @@ export default class ExtendedEmitter extends Component {
                     </Tab>
                     <Tab label="JSON" value="json">
                         <TextField
-                            hintText="Generated object will be used as first argument for event"
+                            floatingLabelText="Generated object will be used as first argument for event"
                             multiLine={true}
                             rows={4}
                             fullWidth={true}
@@ -135,6 +150,30 @@ export default class ExtendedEmitter extends Component {
                 return !!this.state.yamlError;
         }
         return false;
+    }
+
+    onSave() {
+        this.props.onSave(this.state.type, this.arguments, this.state.callback);
+    }
+
+    _prepareMenuItems() {
+        let templates = this.props.templates;
+        if (!templates) {
+            return [];
+        }
+        return templates.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)).map((template, idx) => (
+            <MenuItem
+                index={idx} key={idx} value={template}
+                label={template.name}
+                primaryText={template.name}/>
+        ));
+    }
+
+    handleChange(event, idx, value) {
+        let {eventType, args, callbackUsed}  = value;
+        let arg = args[0];
+        this._checkJSONandUpdate(JSON.stringify(arg));
+        this.setState({type: eventType, callback: callbackUsed});
     }
 }
 

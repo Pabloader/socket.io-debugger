@@ -29,9 +29,9 @@ class TopBar extends Component {
                     docked={false}
                     onRequestChange={open => this.setState({open})}
                 >
-                    <MenuItem onClick={e => this.newConnection()}>New connection</MenuItem>
-                    <MenuItem onClick={e => this.clearTimeline()}>Clear timeline</MenuItem>
-                    <MenuItem onClick={e => this.closeMenu()}>Back</MenuItem>
+                    <MenuItem onClick={e => this.newConnection()} index="0">New connection</MenuItem>
+                    <MenuItem onClick={e => this.clearTimeline()} index="1">Clear timeline</MenuItem>
+                    <MenuItem onClick={e => this.closeMenu()} index="2">Back</MenuItem>
                 </LeftNav>
             </div>
         );

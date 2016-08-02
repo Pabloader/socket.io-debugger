@@ -1,5 +1,5 @@
 import React, {Component, PropTypes} from "react";
-import {Dialog, RaisedButton, AutoComplete} from "material-ui";
+import {Dialog, FlatButton, AutoComplete} from "material-ui";
 import {connect} from "react-redux";
 import {Set} from "immutable";
 import {parseURL} from "../helpers/util.js";
@@ -7,12 +7,12 @@ import * as actions from "../actions";
 
 class Connector extends Component {
     render() {
-        let {history, lastValue, open} = this.props;
+        let {lastValue, open} = this.props;
         let actions = [
-            <RaisedButton
+            <FlatButton
                 label="connect"
                 primary={true}
-                onClick={e => this.onURL(this.refs.url.getValue())}
+                onClick={e => this.doConnect()}
             />
         ];
         return (
@@ -28,6 +28,7 @@ class Connector extends Component {
                     searchText={lastValue}
                     triggerUpdateOnFocus={true}
                     autoComplete="off"
+                    onKeyUp={e => e.keyCode === 13 && this.doConnect()}
                 />
             </Dialog>
         );
@@ -40,6 +41,10 @@ class Connector extends Component {
         }
         let {dispatch} = this.props;
         dispatch(actions.connect(url));
+    }
+
+    doConnect() {
+        this.onURL(this.refs.url.getValue());
     }
 
     _prepareDataSource() {

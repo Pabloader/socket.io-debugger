@@ -1,15 +1,19 @@
 import React, {Component, PropTypes} from "react";
-import {AutoComplete, TableRow, TableRowColumn, IconButton, TextField} from "material-ui";
+import {AutoComplete, TableRow, TableRowColumn, IconButton, TextField, Dialog, FlatButton, Snackbar} from "material-ui";
 import ArrowUpward from "material-ui/lib/svg-icons/navigation/arrow-upward";
 import Code from "material-ui/lib/svg-icons/action/code";
 import {connect} from "react-redux";
-import {List} from "immutable";
+import {List, Set} from "immutable";
 import ExtendedEmitter from "../components/ExtendedEmitter";
 import * as actions from "../actions";
 
 class Emitter extends Component {
     state = {
         open: false,
+        templateNameOpen: false,
+        template: {},
+        templateName: '',
+        snackbarOpen: false
     };
 
     openExtendedEmitter() {
@@ -21,7 +25,7 @@ class Emitter extends Component {
     }
 
     render() {
-        let {lastValue} = this.props;
+        let {lastValue, templates} = this.props;
         var dataSource = this._prepareDataSource();
         return (
             <TableRow selectable={false}>
@@ -58,8 +62,40 @@ class Emitter extends Component {
                         handleClose={() => this.closeExtendedEmitter()}
                         open={this.state.open}
                         onEmit={this.onExtendedEmit.bind(this)}
+                        onSave={this.onRequestSave.bind(this)}
                         dataSource={dataSource}
                         searchText={lastValue && lastValue.eventType}
+                        templates={templates && templates.toJS()}
+                    />
+                    <Dialog
+                        actions={[
+                            <FlatButton
+                                label="Cancel"
+                                onTouchTap={e => this.setState({templateNameOpen: false})}
+                            />,
+                            <FlatButton
+                                label="Ok"
+                                primary={true}
+                                onTouchTap={() => this.onTemplateSave()}
+                                disabled={this.disabled}
+                            />
+                        ]}
+                        modal={false}
+                        open={this.state.templateNameOpen}
+                        onRequestClose={e => this.setState({templateNameOpen: false})}
+                        title="Input template name"
+                    >
+                        <TextField
+                            value={this.state.templateName}
+                            fullWidth={true}
+                            onChange={event => this.setState({templateName: event.target.value})}
+                        />
+                    </Dialog>
+                    <Snackbar
+                        open={this.state.snackbarOpen}
+                        message="Template saved"
+                        autoHideDuration={2000}
+                        onRequestClose={e => this.setState({snackbarOpen: false})}
                     />
                 </TableRowColumn>
             </TableRow>
@@ -72,9 +108,7 @@ class Emitter extends Component {
 
     _prepareDataSource() {
         let {history} = this.props;
-        return [...new Set(history.toJS()
-            .filter(Boolean)
-            .map(({eventType}) => eventType))];
+        return history.toJS().filter(Boolean);
     }
 
     onEmit(type, text) {
@@ -94,20 +128,32 @@ class Emitter extends Component {
         }
         dispatch(actions.emit(type, ...args));
     }
+
+    onRequestSave(eventType, args, callbackUsed) {
+        this.setState({template: {eventType, args, callbackUsed}, templateNameOpen: true, templateName: eventType});
+    }
+
+    onTemplateSave() {
+        let template = this.state.template;
+        this.props.dispatch(actions.addTemplate(template.eventType, template.args, template.callbackUsed, this.state.templateName));
+        this.setState({templateNameOpen: false, snackbarOpen: true});
+    }
 }
 
 Emitter.propTypes = {
     dispatch: PropTypes.func.isRequired,
-    history: PropTypes.instanceOf(List),
-    lastValue: PropTypes.object
+    history: PropTypes.instanceOf(Set),
+    templates: PropTypes.instanceOf(List),
+    lastValue: PropTypes.string
 };
 
 function mapStateToProps(state) {
     const emitter = state.emitter;
     let history = emitter.get('history');
+    let templates = emitter.get('templates');
     let lastValue = emitter.get('lastValue');
-    if (!history) history = List.of();
-    return {history, lastValue, open};
+    if (!history) history = Set.of();
+    return {history, lastValue, open, templates};
 }
 
 export default connect(mapStateToProps)(Emitter);
