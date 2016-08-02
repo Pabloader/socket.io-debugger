@@ -15,6 +15,11 @@ const store = configureStore();
 const app = document.createElement('div');
 document.body.appendChild(app);
 
+let injectTapEventPlugin = require('react-tap-event-plugin');
+
+// inject tap for material-ui
+injectTapEventPlugin();
+
 render(<Root store={store}/>, app);
 
 const state = storage.get('state');
@@ -30,8 +35,3 @@ store.subscribe(
         }
     }
 );
-
-let injectTapEventPlugin = require('react-tap-event-plugin');
-
-// inject tap for material-ui
-injectTapEventPlugin();

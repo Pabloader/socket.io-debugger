@@ -1,34 +1,56 @@
 import React, {Component, PropTypes} from "react";
-import {Dialog, RaisedButton, AutoComplete} from "material-ui";
+import {Dialog, FlatButton, AutoComplete, Tabs, Tab, TextField} from "material-ui";
 import {connect} from "react-redux";
 import {Set} from "immutable";
 import {parseURL} from "../helpers/util.js";
 import * as actions from "../actions";
 
+const CONNECT = 'Connect';
+const LISTEN = 'Listen';
+
 class Connector extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            type: CONNECT
+        };
+    }
+
     render() {
-        let {history, lastValue, open} = this.props;
+        let {lastValue, open} = this.props;
         let actions = [
-            <RaisedButton
-                label="connect"
+            <FlatButton
+                label={this.state.type}
                 primary={true}
-                onClick={e => this.onURL(this.refs.url.getValue())}
+                onClick={e => this.doConnect()}
             />
         ];
         return (
             <Dialog
-                title="Connect"
+                title={this.state.type}
                 actions={actions}
                 open={open}>
-                <AutoComplete
-                    ref="url"
-                    hintText="http://localhost:1234/namespace"
-                    fullWidth={true}
-                    dataSource={this._prepareDataSource()}
-                    searchText={lastValue}
-                    triggerUpdateOnFocus={true}
-                    autoComplete="off"
-                />
+                <Tabs value={this.state.type}
+                      onChange={type => typeof(type) === 'string' && this.setState({type})}>
+                    <Tab label="Debug server" value={CONNECT}>
+                        <AutoComplete
+                            ref="url"
+                            hintText="http://localhost:1234/namespace"
+                            fullWidth={true}
+                            dataSource={this._prepareDataSource()}
+                            searchText={lastValue}
+                            triggerUpdateOnFocus={true}
+                            autoComplete="off"
+                            onKeyUp={e => e.keyCode === 13 && this.doConnect()}
+                        />
+                    </Tab>
+                    <Tab label="Debug client" value={LISTEN}>
+                        <TextField
+                            hintText="/namespace"
+                            fullWidth={true}
+                        />
+                    </Tab>
+                </Tabs>
             </Dialog>
         );
     }
@@ -40,6 +62,15 @@ class Connector extends Component {
         }
         let {dispatch} = this.props;
         dispatch(actions.connect(url));
+    }
+
+    doConnect() {
+        if (this.state.type === 'Connect') {
+            this.onURL(this.refs.url.getValue());
+        } else if (this.state.type === LISTEN) {
+
+        }
+
     }
 
     _prepareDataSource() {
