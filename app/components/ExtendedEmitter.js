@@ -7,6 +7,7 @@ export default class ExtendedEmitter extends Component {
         open: PropTypes.bool.isRequired,
         handleClose: PropTypes.func.isRequired,
         onSave: PropTypes.func,
+        onDelete: PropTypes.func,
         onEmit: PropTypes.func.isRequired,
         dataSource: PropTypes.array.isRequired,
         searchText: PropTypes.string,
@@ -22,7 +23,8 @@ export default class ExtendedEmitter extends Component {
             jsonText: '{}',
             yamlText: '',
             callback: false,
-            type: props.searchText
+            type: props.searchText,
+            template: null
         }
     }
 
@@ -30,6 +32,7 @@ export default class ExtendedEmitter extends Component {
         const buttons = [
             <FlatButton
                 label="Close"
+                secondary={true}
                 onTouchTap={this.props.handleClose}
             />,
             <FlatButton
@@ -39,10 +42,15 @@ export default class ExtendedEmitter extends Component {
                 disabled={this.disabled}
             />
         ];
-        if (typeof this.props.onSave === 'function') {
+        if (typeof this.props.onSave === 'function' && !this.state.template) {
             buttons.unshift(<FlatButton
                 label="Save as template"
                 onTouchTap={this.onSave.bind(this)}
+            />);
+        } else if (typeof this.props.onDelete === 'function' && this.state.template) {
+            buttons.unshift(<FlatButton
+                label="Delete template"
+                onTouchTap={this.onDelete.bind(this)}
             />);
         }
         const checkboxStyle = {
@@ -59,6 +67,7 @@ export default class ExtendedEmitter extends Component {
                     onChange={this.handleChange.bind(this)}
                     fullWidth={true}
                     hintText="Select template"
+                    value={this.state.template}
                 >
                     {this._prepareMenuItems()}
                 </SelectField>
@@ -70,7 +79,7 @@ export default class ExtendedEmitter extends Component {
                     triggerUpdateOnFocus={true}
                     autoComplete="off"
                     fullWidth={true}
-                    onUpdateInput={type => this.setState({type})}
+                    onUpdateInput={type => this.setState({type, template: null})}
                     onNewRequest={type => this.setState({type})}
                 />
                 <Tabs value={this.state.argumentsType}
@@ -101,7 +110,7 @@ export default class ExtendedEmitter extends Component {
                 </Tabs>
                 <Checkbox label="Use callback" style={checkboxStyle}
                           checked={this.state.callback}
-                          onCheck={e => this.setState({callback: e.target.checked})}/>
+                          onCheck={e => this.setState({callback: e.target.checked, template: null})}/>
             </Dialog>
         );
     }
@@ -109,18 +118,24 @@ export default class ExtendedEmitter extends Component {
     _checkJSONandUpdate(jsonText) {
         try {
             let object = JSON.parse(jsonText);
-            this.setState({jsonText, jsonError: null, yamlText: YAML.dump(object), yamlError: null});
+            this.setState({jsonText, jsonError: null, yamlText: YAML.dump(object), yamlError: null, template: null});
         } catch (e) {
-            this.setState({jsonText, jsonError: e.message});
+            this.setState({jsonText, jsonError: e.message, template: null});
         }
     }
 
     _checkYAMLandUpdate(yamlText) {
         try {
             let object = YAML.safeLoad(yamlText);
-            this.setState({yamlText, yamlError: null, jsonText: JSON.stringify(object, null, 4), jsonError: null});
+            this.setState({
+                yamlText,
+                yamlError: null,
+                jsonText: JSON.stringify(object, null, 4),
+                jsonError: null,
+                template: null
+            });
         } catch (e) {
-            this.setState({yamlText, yamlError: e.message});
+            this.setState({yamlText, yamlError: e.message, template: null});
         }
     }
 
@@ -156,24 +171,31 @@ export default class ExtendedEmitter extends Component {
         this.props.onSave(this.state.type, this.arguments, this.state.callback);
     }
 
+    onDelete() {
+        this.props.onDelete(this.state.template);
+        this.setState({template: null});
+    }
+
     _prepareMenuItems() {
         let templates = this.props.templates;
         if (!templates) {
             return [];
         }
-        return templates.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)).map((template, idx) => (
+        return templates.filter(template => template.name).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)).map((template, idx) => (
             <MenuItem
                 index={idx} key={idx} value={template}
                 label={template.name}
-                primaryText={template.name}/>
+                primaryText={template.name}
+                secondaryText={template.eventName}
+            />
         ));
     }
 
-    handleChange(event, idx, value) {
-        let {eventType, args, callbackUsed}  = value;
+    handleChange(event, idx, template) {
+        let {eventType, args, callbackUsed} = template;
         let arg = args[0];
         this._checkJSONandUpdate(JSON.stringify(arg));
-        this.setState({type: eventType, callback: callbackUsed});
+        this.setState({type: eventType, callback: callbackUsed, template});
     }
 }
 

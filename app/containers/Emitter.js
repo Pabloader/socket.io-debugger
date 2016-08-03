@@ -11,6 +11,7 @@ class Emitter extends Component {
     state = {
         open: false,
         templateNameOpen: false,
+        templateDeleteOpen: false,
         template: {},
         templateName: '',
         snackbarOpen: false
@@ -63,6 +64,7 @@ class Emitter extends Component {
                         open={this.state.open}
                         onEmit={this.onExtendedEmit.bind(this)}
                         onSave={this.onRequestSave.bind(this)}
+                        onDelete={this.onRequestDelete.bind(this)}
                         dataSource={dataSource}
                         searchText={lastValue && lastValue.eventType}
                         templates={templates && templates.toJS()}
@@ -77,7 +79,6 @@ class Emitter extends Component {
                                 label="Ok"
                                 primary={true}
                                 onTouchTap={() => this.onTemplateSave()}
-                                disabled={this.disabled}
                             />
                         ]}
                         modal={false}
@@ -90,6 +91,24 @@ class Emitter extends Component {
                             fullWidth={true}
                             onChange={event => this.setState({templateName: event.target.value})}
                         />
+                    </Dialog>
+                    <Dialog
+                        actions={[
+                            <FlatButton
+                                label="Cancel"
+                                onTouchTap={e => this.setState({templateDeleteOpen: false})}
+                            />,
+                            <FlatButton
+                                label="Delete"
+                                primary={true}
+                                onTouchTap={() => this.onTemplateDelete()}
+                            />
+                        ]}
+                        modal={false}
+                        open={this.state.templateDeleteOpen}
+                        onRequestClose={e => this.setState({templateDeleteOpen: false})}
+                        title={`Really delete template ${this.state.template.name}?`}
+                    >
                     </Dialog>
                     <Snackbar
                         open={this.state.snackbarOpen}
@@ -133,10 +152,20 @@ class Emitter extends Component {
         this.setState({template: {eventType, args, callbackUsed}, templateNameOpen: true, templateName: eventType});
     }
 
+    onRequestDelete(template) {
+        this.setState({template,templateDeleteOpen: true});
+    }
+
     onTemplateSave() {
         let template = this.state.template;
         this.props.dispatch(actions.addTemplate(template.eventType, template.args, template.callbackUsed, this.state.templateName));
         this.setState({templateNameOpen: false, snackbarOpen: true});
+    }
+
+    onTemplateDelete() {
+        let template = this.state.template;
+        this.props.dispatch(actions.removeTemplate(template.id));
+        this.setState({templateDeleteOpen: false});
     }
 }
 

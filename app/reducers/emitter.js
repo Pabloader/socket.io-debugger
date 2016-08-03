@@ -38,5 +38,15 @@ export default createReducer({
         return state.merge({
             templates
         });
+    },
+    [actions.REMOVE_TEMPLATE](state, {id}) {
+        let templates = state.get('templates');
+        if (!templates) {
+            templates = List.of();
+        }
+        templates = templates.filter(template => template.id != id);
+        return state.merge({
+            templates
+        });
     }
 }, Map());
