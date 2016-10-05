@@ -2,17 +2,22 @@ import React, {Component, PropTypes} from "react";
 import {AutoComplete, TableRow, TableRowColumn, IconButton, TextField, Dialog, FlatButton, Snackbar} from "material-ui";
 import ArrowUpward from "material-ui/lib/svg-icons/navigation/arrow-upward";
 import Code from "material-ui/lib/svg-icons/action/code";
+import Description from "material-ui/lib/svg-icons/action/description";
 import {connect} from "react-redux";
 import {List, Set} from "immutable";
 import ExtendedEmitter from "../components/ExtendedEmitter";
+import ScriptEditor from "../components/ScriptEditor";
 import * as actions from "../actions";
 
 class Emitter extends Component {
     state = {
         open: false,
+        openScriptEditor: false,
         templateNameOpen: false,
         templateDeleteOpen: false,
+        scriptDeleteOpen: false,
         template: {},
+        script: {},
         templateName: '',
         snackbarOpen: false
     };
@@ -25,8 +30,16 @@ class Emitter extends Component {
         this.setState({open: false});
     }
 
+    openScriptEditor() {
+        this.setState({openScriptEditor: true});
+    }
+
+    closeScriptEditor() {
+        this.setState({openScriptEditor: false});
+    }
+
     render() {
-        let {lastValue, templates} = this.props;
+        let {lastValue, templates, scripts} = this.props;
         var dataSource = this._prepareDataSource();
         return (
             <TableRow selectable={false}>
@@ -55,7 +68,10 @@ class Emitter extends Component {
                         onKeyUp={e => e.keyCode === 13 && this.doEmit()}
                     />
                 </TableRowColumn>
-                <TableRowColumn width="5%">
+                <TableRowColumn width="150">
+                    <IconButton title="SocketScript" onClick={() => this.openScriptEditor()}>
+                        <Description/>
+                    </IconButton>
                     <IconButton title="Extended" onClick={() => this.openExtendedEmitter()}>
                         <Code/>
                     </IconButton>
@@ -68,6 +84,14 @@ class Emitter extends Component {
                         dataSource={dataSource}
                         searchText={lastValue && lastValue.eventType}
                         templates={templates && templates.toJS()}
+                    />
+                    <ScriptEditor
+                        handleClose={() => this.closeScriptEditor()}
+                        open={this.state.openScriptEditor}
+                        onExec={this.onExec.bind(this)}
+                        onSave={this.onScriptSave.bind(this)}
+                        onDelete={this.onRequestScriptDelete.bind(this)}
+                        scripts={scripts && scripts.toJS()}
                     />
                     <Dialog
                         actions={[
@@ -108,11 +132,27 @@ class Emitter extends Component {
                         open={this.state.templateDeleteOpen}
                         onRequestClose={e => this.setState({templateDeleteOpen: false})}
                         title={`Really delete template ${this.state.template.name}?`}
-                    >
-                    </Dialog>
+                    />
+                    <Dialog
+                        actions={[
+                            <FlatButton
+                                label="Cancel"
+                                onTouchTap={e => this.setState({scriptDeleteOpen: false})}
+                            />,
+                            <FlatButton
+                                label="Delete"
+                                primary={true}
+                                onTouchTap={() => this.onScriptDelete()}
+                            />
+                        ]}
+                        modal={false}
+                        open={this.state.scriptDeleteOpen}
+                        onRequestClose={e => this.setState({scriptDeleteOpen: false})}
+                        title={`Really delete script ${this.state.script.name}?`}
+                    />
                     <Snackbar
                         open={this.state.snackbarOpen}
-                        message="Template saved"
+                        message="Saved"
                         autoHideDuration={2000}
                         onRequestClose={e => this.setState({snackbarOpen: false})}
                     />
@@ -135,6 +175,11 @@ class Emitter extends Component {
         dispatch(actions.emit(type, text));
     }
 
+    onExec(script) {
+        let {dispatch} = this.props;
+        dispatch(actions.executeScript(script));
+    }
+
     onExtendedEmit(type, args, cb) {
         let {dispatch} = this.props;
         this.closeExtendedEmitter();
@@ -153,7 +198,11 @@ class Emitter extends Component {
     }
 
     onRequestDelete(template) {
-        this.setState({template,templateDeleteOpen: true});
+        this.setState({template, templateDeleteOpen: true});
+    }
+
+    onRequestScriptDelete(name) {
+        this.setState({script: {name}, scriptDeleteOpen: true});
     }
 
     onTemplateSave() {
@@ -162,10 +211,19 @@ class Emitter extends Component {
         this.setState({templateNameOpen: false, snackbarOpen: true});
     }
 
+    onScriptSave(name, script) {
+        this.props.dispatch(actions.addScript(name, script));
+        this.setState({snackbarOpen: true});
+    }
+
     onTemplateDelete() {
-        let template = this.state.template;
-        this.props.dispatch(actions.removeTemplate(template.id));
+        this.props.dispatch(actions.removeTemplate(this.state.template.id));
         this.setState({templateDeleteOpen: false});
+    }
+
+    onScriptDelete() {
+        this.props.dispatch(actions.removeScript(this.state.script.name));
+        this.setState({scriptDeleteOpen: false});
     }
 }
 
@@ -173,6 +231,7 @@ Emitter.propTypes = {
     dispatch: PropTypes.func.isRequired,
     history: PropTypes.instanceOf(Set),
     templates: PropTypes.instanceOf(List),
+    scripts: PropTypes.instanceOf(List),
     lastValue: PropTypes.string
 };
 
@@ -180,9 +239,10 @@ function mapStateToProps(state) {
     const emitter = state.emitter;
     let history = emitter.get('history');
     let templates = emitter.get('templates');
+    let scripts = emitter.get('scripts');
     let lastValue = emitter.get('lastValue');
     if (!history) history = Set.of();
-    return {history, lastValue, open, templates};
+    return {history, lastValue, open, templates, scripts};
 }
 
 export default connect(mapStateToProps)(Emitter);

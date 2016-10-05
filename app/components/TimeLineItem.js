@@ -56,6 +56,7 @@ export default class TimeLineItem extends Component {
                         modal={true}
                         open={this.state.open}
                         onRequestClose={() => this.handleClose()}
+                        bodyStyle={{overflowY: 'auto'}}
                     >
                         <pre style={{overflow: 'auto'}}>{this._renderDetails()}</pre>
                     </Dialog>
@@ -107,11 +108,17 @@ export default class TimeLineItem extends Component {
         if (!this.content) {
             return '';
         }
+        let content;
         try {
-            return yaml.dump(this.content);
+            content = yaml.dump(this.content);
         } catch (e) {
-            return this.content.toString();
+            content = this.content.toString();
         }
+        let lines = content.split('\n');
+        if (lines.length > 4) {
+            lines.splice(4, lines.length, '...');
+        }
+        return lines.join('\n');
     }
 }
 

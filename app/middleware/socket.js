@@ -6,6 +6,7 @@ import {parseURL} from "../helpers/util.js";
 export const CONNECT = Symbol('Connect');
 export const DISCONNECT = Symbol('Disconnect');
 export const EMIT = Symbol('Emit');
+export const EXECUTE = Symbol('Execute');
 
 const events = [
     "connect",
@@ -48,6 +49,13 @@ const apiHandlers = {
         let client = connector.get('client');
         if (client) {
             client.emit(type, ...args);
+        }
+    },
+    [EXECUTE]({script}, store){
+        let {connector} = store.getState();
+        let client = connector.get('client');
+        if (client) {
+            executeScript(script, client, store.dispatch);
         }
     }
 };
@@ -102,6 +110,27 @@ function initClient(io, url, dispatch) {
         window.socket = socket;
     }
 
+}
+
+let listeners = [];
+
+function executeScript(script, client, dispatch) {
+    try {
+        // remove all old listeners
+        for (let [event, listener] of listeners) {
+            if (event && listener) {
+                client.off(event, listener);
+            }
+        }
+        listeners = [];
+        let fn = new Function('on,emit', script);
+        fn(function (event, listener) {
+            listeners.push([event, listener]);
+            client.on(event, listener);
+        }, client.emit.bind(client));
+    } catch (e) {
+        dispatch(actions.addEvent('executeion_error', e.message, true));
+    }
 }
 
 export default store => next => action => {

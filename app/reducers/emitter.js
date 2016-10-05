@@ -4,7 +4,7 @@ import * as actions from "../actions";
 
 export default createReducer({
     [actions.LOAD_STATE](state, {state: {emitter}}) {
-        let history, templates;
+        let history, templates, scripts;
         if (emitter.history && typeof emitter.history[0] === 'string') {
             history = Set.of(...emitter.history);
         } else {
@@ -15,8 +15,13 @@ export default createReducer({
         } else {
             templates = List.of();
         }
+        if (emitter.scripts) {
+            scripts = List.of(...emitter.scripts);
+        } else {
+            scripts = List.of();
+        }
         return state.merge({
-            history, templates
+            history, templates, scripts
         }).set('lastValue', emitter.lastValue);
     },
     [actions.EMIT](state, {eventType}) {
@@ -47,6 +52,26 @@ export default createReducer({
         templates = templates.filter(template => template.id != id);
         return state.merge({
             templates
+        });
+    },
+    [actions.ADD_SCRIPT](state, data) {
+        let scripts = state.get('scripts');
+        if (!scripts) {
+            scripts = List.of();
+        }
+        scripts = scripts.push(data);
+        return state.merge({
+            scripts
+        });
+    },
+    [actions.REMOVE_SCRIPT](state, {name}) {
+        let scripts = state.get('scripts');
+        if (!scripts) {
+            scripts = List.of();
+        }
+        scripts = scripts.filter(template => template.name != name);
+        return state.merge({
+            scripts
         });
     }
 }, Map());
