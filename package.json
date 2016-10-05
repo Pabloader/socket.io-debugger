@@ -1,6 +1,6 @@
 {
   "name": "socket.io-debugger",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Socket.io debug tool",
   "main": "index.js",
   "scripts": {
@@ -13,12 +13,14 @@
     "url": "https://github.com/pabloader/socket.io-debugger.git"
   },
   "dependencies": {
+    "brace": "^0.8.0",
     "immutable": "^3.7.5",
     "isomorphic-fetch": "^2.2.0",
     "jquery": "^2.2.0",
     "js-yaml": "^3.6.1",
     "material-ui": "^0.14.0",
     "react": "^0.14.0",
+    "react-ace": "^3.6.0",
     "react-addons-create-fragment": "^0.14.2",
     "react-addons-pure-render-mixin": "^0.14.2",
     "react-addons-transition-group": "^0.14.2",
