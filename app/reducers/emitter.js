@@ -39,6 +39,9 @@ export default createReducer({
         if (!templates) {
             templates = List.of();
         }
+        if (!data.id) {
+            data.id = templates.count() + 1;
+        }
         templates = templates.push(data);
         return state.merge({
             templates
@@ -59,17 +62,24 @@ export default createReducer({
         if (!scripts) {
             scripts = List.of();
         }
-        scripts = scripts.push(data);
+        let idx = scripts.findIndex(script => script.id == data.id);
+        if (idx >= 0) {
+            let script = scripts.get(idx);
+            scripts = scripts.set(Object.assign(script, data));
+        } else {
+            data.id = scripts.count() + 1;
+            scripts = scripts.push(data);
+        }
         return state.merge({
             scripts
         });
     },
-    [actions.REMOVE_SCRIPT](state, {name}) {
+    [actions.REMOVE_SCRIPT](state, {id}) {
         let scripts = state.get('scripts');
         if (!scripts) {
             scripts = List.of();
         }
-        scripts = scripts.filter(template => template.name != name);
+        scripts = scripts.filter(script => script.id != id);
         return state.merge({
             scripts
         });

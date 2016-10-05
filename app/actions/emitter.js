@@ -31,5 +31,5 @@ export function executeScript(script) {
 
 export const addTemplate = simpleAction(ADD_TEMPLATE, 'eventType', 'args', 'callbackUsed', 'name');
 export const removeTemplate = simpleAction(REMOVE_TEMPLATE, 'id');
-export const addScript = simpleAction(ADD_SCRIPT, 'name', 'script');
-export const removeScript = simpleAction(REMOVE_SCRIPT, 'name');
+export const addScript = simpleAction(ADD_SCRIPT, 'name', 'script', 'id', 'server');
+export const removeScript = simpleAction(REMOVE_SCRIPT, 'id');

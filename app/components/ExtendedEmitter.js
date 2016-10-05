@@ -1,6 +1,10 @@
 import React, {Component, PropTypes} from "react";
-import {FlatButton, Dialog, Tabs, Tab, Checkbox, TextField, AutoComplete, SelectField, MenuItem} from "material-ui";
+import {FlatButton, Dialog, Tabs, Tab, Checkbox, AutoComplete, SelectField, MenuItem} from "material-ui";
 import YAML from "js-yaml";
+import AceEditor from "react-ace";
+import "brace/mode/json";
+import "brace/mode/yaml";
+import "brace/theme/textmate";
 
 export default class ExtendedEmitter extends Component {
     static propTypes = {
@@ -47,7 +51,7 @@ export default class ExtendedEmitter extends Component {
                 label="Save as template"
                 onTouchTap={this.onSave.bind(this)}
             />);
-        } else if (typeof this.props.onDelete === 'function' && this.state.template) {
+        } else if (typeof this.props.onDelete === 'function' && this.state.template && this.state.template.id) {
             buttons.unshift(<FlatButton
                 label="Delete template"
                 onTouchTap={this.onDelete.bind(this)}
@@ -62,6 +66,7 @@ export default class ExtendedEmitter extends Component {
                 modal={true}
                 open={this.props.open}
                 onRequestClose={this.props.handleClose}
+                title="Extended Emitter"
             >
                 <SelectField
                     onChange={this.handleChange.bind(this)}
@@ -86,25 +91,29 @@ export default class ExtendedEmitter extends Component {
                       onChange={argumentsType => typeof(argumentsType) === 'string' && this.setState({argumentsType})}
                       ref="argumentsType">
                     <Tab label="YAML" value="yaml">
-                        <TextField
-                            floatingLabelText="Generated object will be used as first argument for event"
-                            multiLine={true}
-                            rows={4}
-                            fullWidth={true}
-                            errorText={this.state.yamlError}
-                            onChange={e => this._checkYAMLandUpdate(e.target.value)}
+                        <AceEditor
+                            mode="yaml"
+                            theme="textmate"
+                            fontSize={14}
+                            onChange={e => this._checkYAMLandUpdate(e)}
+                            name="yaml_code"
+                            width="100%"
+                            height="200px"
                             value={this.state.yamlText}
+                            editorProps={{$blockScrolling: true}}
                         />
                     </Tab>
                     <Tab label="JSON" value="json">
-                        <TextField
-                            floatingLabelText="Generated object will be used as first argument for event"
-                            multiLine={true}
-                            rows={4}
-                            fullWidth={true}
-                            errorText={this.state.jsonError}
-                            onChange={e => this._checkJSONandUpdate(e.target.value)}
+                        <AceEditor
+                            mode="json"
+                            theme="textmate"
+                            fontSize={14}
+                            onChange={e => this._checkJSONandUpdate(e)}
+                            name="json_code"
+                            width="100%"
+                            height="200px"
                             value={this.state.jsonText}
+                            editorProps={{$blockScrolling: true}}
                         />
                     </Tab>
                 </Tabs>

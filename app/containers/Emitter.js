@@ -91,7 +91,8 @@ class Emitter extends Component {
                         onExec={this.onExec.bind(this)}
                         onSave={this.onScriptSave.bind(this)}
                         onDelete={this.onRequestScriptDelete.bind(this)}
-                        scripts={scripts && scripts.toJS()}
+                        scripts={scripts && scripts.toJS().filter(s => s.server === this.props.server)}
+                        ref="scriptEditor"
                     />
                     <Dialog
                         actions={[
@@ -201,8 +202,8 @@ class Emitter extends Component {
         this.setState({template, templateDeleteOpen: true});
     }
 
-    onRequestScriptDelete(name) {
-        this.setState({script: {name}, scriptDeleteOpen: true});
+    onRequestScriptDelete(script) {
+        this.setState({script, scriptDeleteOpen: true});
     }
 
     onTemplateSave() {
@@ -211,9 +212,10 @@ class Emitter extends Component {
         this.setState({templateNameOpen: false, snackbarOpen: true});
     }
 
-    onScriptSave(name, script) {
-        this.props.dispatch(actions.addScript(name, script));
+    onScriptSave(name, script, id) {
+        this.props.dispatch(actions.addScript(name, script, id, this.props.server));
         this.setState({snackbarOpen: true});
+        setTimeout(() => this.refs.scriptEditor.scriptObject = this.props.scripts.last());
     }
 
     onTemplateDelete() {
@@ -222,7 +224,7 @@ class Emitter extends Component {
     }
 
     onScriptDelete() {
-        this.props.dispatch(actions.removeScript(this.state.script.name));
+        this.props.dispatch(actions.removeScript(this.state.script.id));
         this.setState({scriptDeleteOpen: false});
     }
 }
@@ -237,12 +239,14 @@ Emitter.propTypes = {
 
 function mapStateToProps(state) {
     const emitter = state.emitter;
+    const connector = state.connector;
     let history = emitter.get('history');
     let templates = emitter.get('templates');
     let scripts = emitter.get('scripts');
     let lastValue = emitter.get('lastValue');
+    let server = connector.get('lastValue');
     if (!history) history = Set.of();
-    return {history, lastValue, open, templates, scripts};
+    return {history, lastValue, open, templates, scripts, server};
 }
 
 export default connect(mapStateToProps)(Emitter);
