@@ -1,8 +1,9 @@
 import React, {Component, PropTypes} from "react";
-import {FlatButton, Dialog, TextField, SelectField, MenuItem} from "material-ui";
-import AceEditor from 'react-ace';
-import 'brace/mode/javascript';
-import 'brace/theme/textmate';
+import {FlatButton, Dialog, TextField, SelectField, MenuItem, IconButton} from "material-ui";
+import IconInfo from "material-ui/lib/svg-icons/action/info-outline";
+import AceEditor from "react-ace";
+import "brace/mode/javascript";
+import "brace/theme/textmate";
 
 const EMPTY_SCRIPT_NAME = '<empty>';
 
@@ -30,7 +31,20 @@ export default class ScriptEditor extends Component {
     }
 
     render() {
+        const infoStyle = {
+            float: 'left',
+            padding: 0,
+            width: '48px',
+            height: '24px'
+        };
+        const info = (
+            <IconButton style={infoStyle} tooltip="Write script in ordinary JS. Use functions 'on' and 'emit' to receive and send events"
+            tooltipPosition="top-right">
+                <IconInfo/>
+            </IconButton>
+        );
         const buttons = [
+            info,
             <FlatButton
                 label="Close"
                 secondary={true}
